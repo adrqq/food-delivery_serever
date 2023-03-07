@@ -1,6 +1,6 @@
 const { Pool } = require('pg')
 
- class PostgresAdapter {
+class PostgresAdapter {
   constructor() {
     this.pool = new Pool({
       user: process.env.PG_USER,
@@ -13,17 +13,17 @@ const { Pool } = require('pg')
     console.log('---postgres connected---')
   }
 
-  async getArtists(callback) {
-    const artists = pool.query("SELECT * FROM artists").rows;
+  async getProducts(callback) {
+    const products = pool.query("SELECT * FROM products").rows;
 
-    for await (const artist of artists) {
-      await callback(artist)
+    for await (const product of products) {
+      await callback(product)
     }
   }
 
-  async insertArtists(artists) {
+  async insertProducts(products) {
     // 
   }
- }
+}
 
 module.exports.PostgresAdapter = new PostgresAdapter()

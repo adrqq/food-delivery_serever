@@ -1,18 +1,18 @@
-require('./redisAdapter');
- 
- class Adapter {
+// require('./redisAdapter');
+
+class Adapter {
   constructor() {
     this.Adapter = this.databaseSelectHandler(process.env.CURRENT_DB)
   }
 
-  async getArtists() {
-    return this.Adapter.getArtists(async (artist) => {
+  async getProducts() {
+    return this.Adapter.getProducts(async (product) => {
 
     });
   }
 
-  async insertArtists(artist) {
-    return this.Adapter.insertArtists(artist)
+  async insertProducts(product) {
+    return this.Adapter.insertProducts(product)
   }
 
   databaseSelectHandler(dbName) {
@@ -24,6 +24,6 @@ require('./redisAdapter');
       throw new Error('Wrong property "CURRENT_DB" inside of .env file!!!')
     }
   }
- }
+}
 
- module.exports.Adapter = new Adapter();
+module.exports.Adapter = new Adapter();

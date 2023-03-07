@@ -6,16 +6,16 @@ class MongoAdapter {
     console.log('---mongo connected---')
   }
 
-  async getArtists(callback) {
-    const artists = MongoAdapter.collection('Artists').find();
+  async getProducts(callback) {
+    const artists = MongoAdapter.collection('Products').find();
 
-    for await (const artist of artists) {
-      await callback(artist)
+    for await (const product of products) {
+      await callback(product)
     }
   }
 
-  async insertArtists(artists) {
-    collection('Artists').insertMany(artists)
+  async insertProducts(products) {
+    collection('Products').insertMany(products)
   }
 
   static collection(name) {
