@@ -10,7 +10,7 @@ const app = express()
 async function setup() {
   app.use(cors());
 
-  app.use('/products', express.json(), productsRouter);
+  app.use('/', express.json(), productsRouter);
 
   return app;
 }

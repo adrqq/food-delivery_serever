@@ -1,14 +1,21 @@
 const Adapter = require('../adapters/index')
 
-const getAll = () => {
-  return Adapter.getProducts()
+class productsService {
+  constructor() {
+    this.Adapter = Adapter
+  }
+
+  async getAll() {
+    return this.Adapter.getProducts()
+  }
+
+  async getLength(product) {
+    return this.Adapter.getLength()
+  }
+
+  async getChunk(page, itemsPerPage, filter) {
+    return this.Adapter.getChunk(page, itemsPerPage, filter)
+  }
 }
 
-const insert = () => {
-  Adapter.insertProducts([{ john: doe }])
-}
-
-module.exports = {
-  getAll,
-  insert
-}
+module.exports = new productsService()

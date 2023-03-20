@@ -5,6 +5,8 @@ const productsController = require('../controllers/products');
 
 const router = express.Router();
 
-router.get('/', productsController.getAll);
+router.get('/products', productsController.getAll);
+router.get('/products/chunk', productsController.getChunk);
+router.get('/products/length', productsController.getLength);
 
 module.exports = { router }
