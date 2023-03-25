@@ -1,28 +1,49 @@
-const productsService = require('../services/products')
+const productsService = require('../services/products');
 class productsController {
   async getAll(req, res) {
-    const products = await productsService.getAll()
+    const products = await productsService.getAll();
 
     // console.log(products)
 
-    res.send(products)
+    res.send(products);
   }
 
   async getLength(req, res) {
-    const length = await productsService.getLength()
+    const { filter, searchQuery } = req.query;
 
-    res.send(length.toString())
+    try {
+      const length = await productsService.getLength(filter, searchQuery);
+
+      res.status(200)
+      res.send(length.toString());
+    } catch (error) {
+      console.log(error)
+      res.status(500).send('Server error');
+    }
   }
 
   async getChunk(req, res) {
-    const { page, itemsPerPage, filter } = req.query
+    const { page, itemsPerPage, filter, searchQuery } = req.query;
 
-    console.log(page, itemsPerPage, filter)
+    console.log('page', page, 'itemsPerPage', itemsPerPage, 'filter', filter, 'searchQuery', searchQuery);
 
-    const products = await productsService.getChunk(page, itemsPerPage, filter)
+    try {
+      const products = await productsService.getChunk(page, itemsPerPage, filter, searchQuery);
 
-    res.send(products)
+      res.status(200).send(products);
+    } catch (error) {
+      console.log(error)
+      res.status(500).send('Server error');
+    }
+  }
+
+  async search(req, res) {
+    const { query } = req.query;
+
+    const products = await productsService.search(query);
+
+    res.send(products);
   }
 }
 
-module.exports = new productsController()
+module.exports = new productsController();

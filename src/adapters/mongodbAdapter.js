@@ -23,20 +23,56 @@ class MongoAdapter {
     }
   }
 
-  async getLength() {
-    return await MongoAdapter.collection('products').countDocuments();
+  async getLength(filter, searchQuery) {
+    if (filter === 'All') {
+      return await MongoAdapter
+        .collection('products')
+        .countDocuments({ name: { $regex: searchQuery, $options: 'i' } });
+    } else {
+      return await MongoAdapter
+        .collection('products')
+        .countDocuments({ category: filter }, { name: { $regex: searchQuery, $options: 'i' } })
+    }
   }
 
-  async getChunk(page, itemsPerPage, filter) {
+  async getChunk(page, itemsPerPage, filter, searchQuery) {
     let products;
 
-    if (filter === 'All') {
-      products = await MongoAdapter.collection('products').find().skip((page - 1) * itemsPerPage).limit(+itemsPerPage).toArray();
-    } else {
-      products = await MongoAdapter.collection('products').find({ category: filter }).skip((page - 1) * itemsPerPage).limit(+itemsPerPage).toArray();
+    try {
+      if (filter === 'All') {
+        products = await MongoAdapter
+          .collection('products')
+          .find({ name: { $regex: searchQuery, $options: 'i' } })
+          .skip((page - 1) * itemsPerPage)
+          .limit(+itemsPerPage)
+          .toArray();
+      } else {
+        products = await MongoAdapter
+          .collection('products')
+          .find({ category: filter }, { name: { $regex: searchQuery, $options: 'i' } })
+          .skip((page - 1) * itemsPerPage)
+          .limit(+itemsPerPage)
+          .toArray();
+      }
+    } catch (error) {
+      console.log(error)
+      console.log('---mongo error !!!!!!!!!!!---')
     }
 
     return products;
+  }
+
+  async search(query) {
+    try {
+      const products = await MongoAdapter
+        .collection('products')
+        .find({ name: { $regex: query, $options: 'i' } })
+        .toArray();
+
+      return products;
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   static collection(name) {

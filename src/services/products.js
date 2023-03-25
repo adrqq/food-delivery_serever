@@ -9,12 +9,16 @@ class productsService {
     return this.Adapter.getProducts()
   }
 
-  async getLength(product) {
-    return this.Adapter.getLength()
+  async getLength(filter, searchQuery) {
+    return this.Adapter.getLength(filter, searchQuery)
   }
 
-  async getChunk(page, itemsPerPage, filter) {
-    return this.Adapter.getChunk(page, itemsPerPage, filter)
+  async getChunk(page, itemsPerPage, filter, searchQuery) {
+    return this.Adapter.getChunk(page, itemsPerPage, filter, searchQuery)
+  }
+
+  async search(query) {
+    return this.Adapter.search(query)
   }
 }
 
