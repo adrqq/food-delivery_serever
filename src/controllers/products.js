@@ -1,9 +1,11 @@
 const productsService = require('../services/products');
 class productsController {
   async getAll(req, res) {
-    const products = await productsService.getAll();
+    const products = [];
 
-    // console.log(products)
+    await productsService.getAll(async (product) => {
+      products.push(product);
+    });
 
     res.send(products);
   }

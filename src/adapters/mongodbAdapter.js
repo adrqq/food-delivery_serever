@@ -1,5 +1,9 @@
 const { MongoClient } = require('mongodb');
-
+const UserSchema = require('../models/user-model');
+const TokenSchema = require('../models/token-model');
+const bcrypt = require('bcrypt');
+const uuid = require('uuid');
+const MailService = require('../services/mail');
 class MongoAdapter {
   constructor() {
     console.log('---mongo connecting---')
@@ -62,24 +66,53 @@ class MongoAdapter {
     return products;
   }
 
-  async search(query) {
-    try {
-      const products = await MongoAdapter
-        .collection('products')
-        .find({ name: { $regex: query, $options: 'i' } })
-        .toArray();
+  async registration(name, email, password) {
 
-      return products;
+    try {
+      // console.log(UserSchema)
+
+      // new MongoClient(process.env.MONGO_URL).db(process.env.MONGO_DB_NAME).createCollection('tokens', {
+      //   validator: {
+      //     $jsonSchema: TokenSchema
+      //   }
+      // });
+
+      // console.log('---mongo created collection tokens---')
+
+
+
+      const candidate = await MongoAdapter.collection('users').findOne({ email });
+
+      if (candidate) {
+        throw new Error(`User with this email ${email} already exists!`);
+      }
+
+      const hashedPassword = await bcript.hash(password, 3);
+      const activationLink = uuid.v4();
+      const user = await MongoAdapter
+        .collection('users')
+        .insertOne({ name, email, password: hashedPassword, role: 'user', activationLink });
+      await MailService.sendActivationMail(email, activationLink);
+
+
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
-  static collection(name) {
-    console.log(this.client)
-    // console.log(new MongoClient(process.env.MONGO_URL))
+  async saveToken(userId, refreshToken) {
+    const tokenData = await MongoAdapter.collection('tokens').findOne({ user: userId });
 
-    return new MongoClient(process.env.MONGO_URL).db(process.env.MONGO_DB_NAME).collection(name);
+    if (tokenData) {
+      tokenData.refreshToken = refreshToken;
+      await MongoAdapter.collection('tokens').updateOne({ user: userId }, { $set: tokenData });
+
+      return tokenData;
+    }
+
+    await MongoAdapter.collection('tokens').insertOne({ user: userId, refreshToken });
+
+    return tokenData;
   }
 }
 

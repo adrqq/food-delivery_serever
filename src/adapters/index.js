@@ -1,5 +1,4 @@
 // require('./redisAdapter');
-
 class Adapter {
   constructor() {
     this.Adapter = this.databaseSelectHandler(process.env.CURRENT_DB);
@@ -25,6 +24,14 @@ class Adapter {
 
   async search(query) {
     return this.Adapter.search(query);
+  }
+
+  async registration(name, email, password) {
+    return this.Adapter.registration(email, password);
+  }
+
+  async saveToken(userId, refreshToken) {
+    return this.Adapter.saveToken(userId, refreshToken);
   }
 
   databaseSelectHandler(dbName) {
