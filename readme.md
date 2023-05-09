@@ -1,5 +1,4 @@
-    await MongoAdapter.collection('products').insertMany([
-              {
+              [{
           id: 1,
           name: 'Spaghetti Bolognese',
           description: 'Classic Italian pasta dish with ground beef, tomato sauce, and Parmesan cheese.',
@@ -378,9 +377,4 @@
           category: 'Desserts',
           count: 12,
           likesCount: 18,
-        },
-    ]).then(() => {
-      console.log('Products inserted')
-    }).catch(err => {
-      console.log(err)
-    })
+        }]
