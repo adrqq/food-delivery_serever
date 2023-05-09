@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
+const functions = require('firebase-functions');
 
 require('dotenv').config();
 

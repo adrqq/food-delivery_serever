@@ -39,6 +39,50 @@ class productsController {
     }
   }
 
+  async addProduct(req, res) {
+    const {
+      id,
+      name,
+      description,
+      price,
+      weight,
+      category,
+      count,
+      likesCount,
+    } = req.body;
+
+    try {
+      await productsService.addProduct({
+        id,
+        name,
+        description,
+        price,
+        weight,
+        category,
+        count,
+        likesCount,
+      });
+
+      res.status(200).send('Product added');
+    } catch (error) {
+      console.log(error)
+      res.status(500).send('Server error');
+    }
+  }
+
+  async increaseLikesCount(req, res) {
+    const { id } = req.query;
+
+    try {
+      await productsService.increaseLikesCount(id);
+
+      res.status(200).send('Likes count increased');
+    } catch (error) {
+      console.log(error)
+      res.status(500).send('Server error');
+    }
+  }
+
   async search(req, res) {
     const { query } = req.query;
 

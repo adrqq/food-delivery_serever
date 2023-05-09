@@ -1,18 +1,19 @@
 // const Adapter = require('../adapters/index')
 const { MongoClient } = require('mongodb');
+const ProductModel = require('../models/product-model');
+const ApiError = require('../exceptions/api-error');
 
 class productsService {
-  constructor() {
-    console.log('---mongo connecting---')
-    console.log(process.env.MONGO_URL)
-
-    this.client = new MongoClient(process.env.MONGO_URL);
-    console.log('---mongo connected---')
-  }
 
   async getAll(callback) {
     try {
-      const products = productsService.collection('products').find();
+      // const products = productsService.collection('products').find();
+
+      // for await (const product of products) {
+      //   await callback(product)
+      // }
+
+      const products = ProductModel.find();
 
       for await (const product of products) {
         await callback(product)
@@ -24,37 +25,36 @@ class productsService {
   }
 
   async getLength(filter, searchQuery) {
-    if (filter === 'All') {
-      return await productsService
-        .collection('products')
-        .countDocuments({ name: { $regex: searchQuery, $options: 'i' } });
+
+    if (filter.toString() === 'All') {
+      // console.log('DATA', await ProductModel.find({ name: { $regex: searchQuery, $options: 'i' } }).exec())
+
+      return await ProductModel
+        .find({ name: { $regex: searchQuery, $options: 'i' } })
+        .countDocuments();
     } else {
-      return await productsService
-        .collection('products')
-        .countDocuments({ category: filter }, { name: { $regex: searchQuery, $options: 'i' } })
+      return await ProductModel
+        .find({ category: filter }, { name: { $regex: searchQuery, $options: 'i' } })
+        .countDocuments();
     }
   }
 
   async getChunk(page, itemsPerPage, filter, searchQuery) {
-    // return productsService.collection('products').find({ name: { $regex: searchQuery, $options: 'i' } }).toArray()
-
     try {
-      if (filter === 'All') {
-        const products = await productsService
-          .collection('products')
+      if (filter.toString() === 'All') {
+        const products = await ProductModel
           .find({ name: { $regex: searchQuery, $options: 'i' } })
           .skip((page - 1) * itemsPerPage)
           .limit(+itemsPerPage)
-          .toArray();
+          .exec();
 
         return products;
       } else {
-        const products = await productsService
-          .collection('products')
-          .find({ category: filter }, { name: { $regex: searchQuery, $options: 'i' } })
+        const products = await ProductModel
+          .find({ category: { $regex: filter }, name: { $regex: searchQuery, $options: 'i' } })
           .skip((page - 1) * itemsPerPage)
           .limit(+itemsPerPage)
-          .toArray();
+          .exec();
 
         return products;
       }
@@ -64,9 +64,31 @@ class productsService {
     }
   }
 
-  static collection(name) {
-    return new MongoClient(process.env.MONGO_URL).db(process.env.MONGO_DB_NAME).collection(name);
+  async addProduct(product) {
+
+    try {
+      // const newProduct = ProductModel.create(product)
+
+      // return newProduct
+
+      return ProductModel.updateMany({}, { $set: { count: 0 } })
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+    }
   }
+
+  async increaseLikesCount(id) {
+    try {
+      const product = await ProductModel.findOne({ id: id })
+
+      if (product) {
+        product.likesCount += 1;
+        product.save();
+      }
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+    }
+  };
 }
 
 module.exports = new productsService()
