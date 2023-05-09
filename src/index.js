@@ -13,4 +13,4 @@ try {
   console.log(err)
 }
 
-exports.api = functions.https.onRequest(app);
+module.exports = app;
