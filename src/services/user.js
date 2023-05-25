@@ -9,6 +9,7 @@ const ApiError = require('../exceptions/api-error');
 // const jwt = require('jsonwebtoken');
 
 class UserService {
+
   async registration(name, role, email, password) {
     const candidate = await UserModel.findOne({ email });
     if (candidate) {
@@ -55,6 +56,7 @@ class UserService {
 
   async refresh(refreshToken) {
     if (!refreshToken) {
+      console.log('refreshToken', refreshToken);
       throw ApiError.UnauthorizedError();
     }
 
@@ -62,13 +64,14 @@ class UserService {
     const tokenFromDb = await TokenService.findToken(refreshToken);
 
     if (!userData || !tokenFromDb) {
+      console.log('refreshToken', refreshToken);
       throw ApiError.UnauthorizedError();
     }
 
     const user = await UserModel.findById(userData.id);
     const userDto = new UserDto(user);
     const tokens = TokenService.generateToken({ ...userDto });
-    await TokenService.saveToken(userDto.id, tokens.refreshToken);
+    await TokenService.saveToken(userDto.id, refreshToken);
 
     return { ...tokens, user: userDto };
   }

@@ -41,7 +41,6 @@ class productsController {
 
   async addProduct(req, res) {
     const {
-      id,
       name,
       description,
       price,
@@ -49,11 +48,11 @@ class productsController {
       category,
       count,
       likesCount,
+      packageCost,
     } = req.body;
 
     try {
       await productsService.addProduct({
-        id,
         name,
         description,
         price,
@@ -61,6 +60,7 @@ class productsController {
         category,
         count,
         likesCount,
+        packageCost
       });
 
       res.status(200).send('Product added');
@@ -89,6 +89,40 @@ class productsController {
     const products = await productsService.search(query);
 
     res.send(products);
+  }
+
+  async addProductToUserCart(req, res) {
+    try {
+      const { userId, productId } = req.body;
+
+      await productsService.addProductToUserCart(userId, productId);
+
+      res.send('Product added to cart');
+    } catch (error) {
+      console.log(error)
+      res.status(500).send('Server error');
+    }
+  }
+
+  async removeProductFromUserCart(req, res) {
+    try {
+      const { userId, productId } = req.body;
+
+      await productsService.removeProductFromUserCart(userId, productId);
+
+      res.send('Product removed from cart');
+    } catch (error) {
+      console.log(error)
+      res.status(500).send('Server error');
+    }
+  }
+
+  async getUserCart(req, res) {
+    const { userId } = req.query;
+
+    const cart = await productsService.getUserCart(userId);
+
+    res.send(cart);
   }
 }
 

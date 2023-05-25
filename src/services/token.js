@@ -48,7 +48,9 @@ class TokenService {
   }
 
   async findToken(refreshToken) {
-    const tokenData = await TokenModel.findOne({ refreshToken });
+    const tokenData = await TokenModel.find({ refreshToken });
+
+    console.log('tokenData', tokenData);
 
     return tokenData;
   };

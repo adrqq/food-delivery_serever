@@ -1,18 +1,13 @@
 // const Adapter = require('../adapters/index')
 const { MongoClient } = require('mongodb');
 const ProductModel = require('../models/product-model');
+const CartModel = require('../models/cart-model');
 const ApiError = require('../exceptions/api-error');
 
 class productsService {
 
   async getAll(callback) {
     try {
-      // const products = productsService.collection('products').find();
-
-      // for await (const product of products) {
-      //   await callback(product)
-      // }
-
       const products = ProductModel.find();
 
       for await (const product of products) {
@@ -67,11 +62,13 @@ class productsService {
   async addProduct(product) {
 
     try {
-      // const newProduct = ProductModel.create(product)
+      const count = await ProductModel.countDocuments({});
+      const id = count + 1;
 
-      // return newProduct
-
-      return ProductModel.updateMany({}, { $set: { count: 0 } })
+      return ProductModel.create({
+        id: id,
+        ...product,
+      })
     } catch (e) {
       ApiError.BadRequest(e.message)
     }
@@ -89,6 +86,97 @@ class productsService {
       ApiError.BadRequest(e.message)
     }
   };
+
+  async addProductToUserCart(userId, productId) {
+    console.log('userId', userId, 'productId', productId)
+
+    if (!userId || !productId) {
+      throw ApiError.BadRequest('userId or productId is not defined')
+    }
+
+    try {
+      const cart = await CartModel.findOne({ userId: userId });
+
+      if (cart) {
+        const item = cart.itemsData.find(item => item.productId === productId);
+
+        if (item) {
+          item.count += 1;
+          cart.save();
+        } else {
+          cart.itemsData.push({
+            productId: productId,
+            count: 1,
+          });
+          cart.save();
+        }
+      } else {
+        const cart = await CartModel.create({
+          userId: userId,
+          itemsData: [
+            {
+              productId: productId,
+              count: 1,
+            }
+          ]
+        });
+      }
+    } catch (e) {
+      throw ApiError.BadRequest(e.message)
+    }
+  }
+
+  async removeProductFromUserCart(userId, productId) {
+
+    if (!userId || !productId) {
+      throw ApiError.BadRequest('userId or productId is not defined')
+    }
+
+    try {
+      const cart = await CartModel.findOne({ userId: userId });
+
+      if (cart) {
+        const item = cart.itemsData.find(item => item.productId === productId);
+
+        if (item) {
+          if (item.count > 1) {
+            item.count -= 1;
+            cart.save();
+          } else {
+            cart.itemsData = cart.itemsData.filter(item => item.productId !== productId);
+            cart.save();
+          }
+        }
+      }
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+    }
+  }
+
+  async getUserCart(userId) {
+
+    if (!userId) {
+      throw ApiError.BadRequest('userId is not defined')
+    }
+
+    console.log('userId', userId)
+
+    try {
+      const cart = await CartModel.findOne({ userId: userId });
+
+      console.log('cart', cart)
+
+      if (cart) {
+        return cart;
+      } else {
+        throw ApiError.BadRequest('cart is not defined')
+      }
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+
+      return [];
+    }
+  }
 }
 
 module.exports = new productsService()

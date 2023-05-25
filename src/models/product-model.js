@@ -9,6 +9,7 @@ const ProductSchema = new Schema({
   category: { type: String, required: true },
   count: { type: Number, required: true },
   likesCount: { type: Number, required: true },
+  packageCost: { type: Number, required: true },
 })
 
 module.exports = model('Product', ProductSchema, 'products');
