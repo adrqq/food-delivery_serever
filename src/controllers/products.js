@@ -124,6 +124,14 @@ class productsController {
 
     res.send(cart);
   }
+
+  async deleteProductFromUserCart(req, res) {
+    const { userId, productId } = req.body;
+
+    await productsService.deleteProductFromUserCart(userId, productId);
+
+    res.send('Product deleted from cart');
+  }
 }
 
 module.exports = new productsController();

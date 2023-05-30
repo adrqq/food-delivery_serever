@@ -177,6 +177,28 @@ class productsService {
       return [];
     }
   }
+
+  async deleteProductFromUserCart (userId, productId) {
+  
+      if (!userId || !productId) {
+        throw ApiError.BadRequest('userId or productId is not defined')
+      }
+  
+      try {
+        const cart = await CartModel.findOne({ userId: userId });
+  
+        if (cart) {
+          cart.itemsData = cart.itemsData.filter(item => item.productId !== productId);
+          cart.save();
+        }
+      } catch (e) {
+        ApiError.BadRequest(e.message)
+      }
+  }
+
+  // async clearUserCart(userId) {
+
+  // }
 }
 
 module.exports = new productsService()

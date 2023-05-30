@@ -14,5 +14,7 @@ router.post('/products/add', productsController.addProduct);
 router.post('/products/likes/add', productsController.increaseLikesCount);
 router.post('/products/user/cart/add', productsController.addProductToUserCart);
 router.post('/products/user/cart/remove', productsController.removeProductFromUserCart);
+router.post('/products/user/cart/delete', productsController.deleteProductFromUserCart);
+// router.post('/products/user/cart/clear', productsController.clearUserCart);
 
 module.exports = { router }
