@@ -1,4 +1,6 @@
 const productsService = require('../services/products');
+const ApiError = require('../exceptions/api-error');
+
 class productsController {
   async getAll(req, res) {
     const products = [];
@@ -19,8 +21,7 @@ class productsController {
       res.status(200)
       res.send(length.toString());
     } catch (error) {
-      console.log(error)
-      res.status(500).send('Server error');
+      throw ApiError.BadRequest(error.message);
     }
   }
 
@@ -34,8 +35,7 @@ class productsController {
 
       res.status(200).send(products);
     } catch (error) {
-      console.log(error)
-      res.status(500).send('Server error');
+      throw ApiError.BadRequest(error.message);
     }
   }
 
@@ -65,8 +65,7 @@ class productsController {
 
       res.status(200).send('Product added');
     } catch (error) {
-      console.log(error)
-      res.status(500).send('Server error');
+      throw ApiError.BadRequest(error.message);
     }
   }
 
@@ -78,8 +77,7 @@ class productsController {
 
       res.status(200).send('Likes count increased');
     } catch (error) {
-      console.log(error)
-      res.status(500).send('Server error');
+      throw ApiError.BadRequest(error.message);
     }
   }
 
@@ -99,8 +97,7 @@ class productsController {
 
       res.send('Product added to cart');
     } catch (error) {
-      console.log(error)
-      res.status(500).send('Server error');
+      throw ApiError.BadRequest(error.message);
     }
   }
 
@@ -112,26 +109,75 @@ class productsController {
 
       res.send('Product removed from cart');
     } catch (error) {
+      throw ApiError.BadRequest(error.message);
+    }
+  }
+
+  async getUserCart(req, res) {
+    try {
+      const { userId } = req.query;
+
+      const cart = await productsService.getUserCart(userId);
+
+      res.send(cart);
+    } catch (error) {
       console.log(error)
       res.status(500).send('Server error');
     }
   }
 
-  async getUserCart(req, res) {
-    const { userId } = req.query;
-
-    const cart = await productsService.getUserCart(userId);
-
-    res.send(cart);
-  }
-
   async deleteProductFromUserCart(req, res) {
-    const { userId, productId } = req.body;
+    try {
+      const { userId, productId } = req.body;
 
-    await productsService.deleteProductFromUserCart(userId, productId);
+      await productsService.deleteProductFromUserCart(userId, productId);
 
-    res.send('Product deleted from cart');
+      res.send('Product deleted from cart');
+    } catch (error) {
+      throw ApiError.BadRequest(error.message);
+    }
   }
+
+  async uploadImage(req, res) {
+    try {
+      const { name, productId } = req.body;
+
+      console.log('name', name)
+      console.log('req.file', req.file)
+
+      await productsService.uploadImage(name, req.file, productId)
+
+      res.send('Image uploaded');
+    } catch (error) {
+      throw ApiError.BadRequest(error.message);
+    }
+  }
+
+  async getImage(req, res) {
+    try {
+      const { productId } = req.query;
+
+      const image = await productsService.getImage(productId);
+
+      res.send(image);
+    } catch (error) {
+      throw ApiError.BadRequest(error.message);
+    }
+  }
+
+  // app.post('/upload', upload.single('testImg'), (req, res) => {
+  //   const saveImg = new ImgModel({
+  //     name: req.body.name,
+  //     img: {
+  //       data: fs.readFileSync('uploads/' + req.file.filename),
+  //       contentType: 'image/png'
+  //     }
+  //   })
+
+  //   saveImg.save()
+
+  //   res.send('ok')
+  // })
 }
 
 module.exports = new productsController();

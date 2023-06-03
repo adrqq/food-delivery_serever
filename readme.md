@@ -8,3 +8,17 @@
           count: 12,
           likesCount: 18,
         }
+
+
+
+{
+  "id": 4,
+  "name": "Бургер з беконом",
+  "description": "Жирний вонячий бургер з бконом і пенісами",
+  "price": 185,
+  "weight": 550,
+  "category": "HotDishes",
+  "count": 0,
+  "likesCount": 283,
+  "packageCost": 10
+}

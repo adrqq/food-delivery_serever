@@ -3,6 +3,8 @@ const { MongoClient } = require('mongodb');
 const ProductModel = require('../models/product-model');
 const CartModel = require('../models/cart-model');
 const ApiError = require('../exceptions/api-error');
+const ImgModel = require('../models/img-model');
+const fs = require('fs');
 
 class productsService {
 
@@ -178,27 +180,54 @@ class productsService {
     }
   }
 
-  async deleteProductFromUserCart (userId, productId) {
-  
-      if (!userId || !productId) {
-        throw ApiError.BadRequest('userId or productId is not defined')
+  async deleteProductFromUserCart(userId, productId) {
+
+    if (!userId || !productId) {
+      throw ApiError.BadRequest('userId or productId is not defined')
+    }
+
+    try {
+      const cart = await CartModel.findOne({ userId: userId });
+
+      if (cart) {
+        cart.itemsData = cart.itemsData.filter(item => item.productId !== productId);
+        cart.save();
       }
-  
-      try {
-        const cart = await CartModel.findOne({ userId: userId });
-  
-        if (cart) {
-          cart.itemsData = cart.itemsData.filter(item => item.productId !== productId);
-          cart.save();
-        }
-      } catch (e) {
-        ApiError.BadRequest(e.message)
-      }
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+    }
   }
 
   // async clearUserCart(userId) {
 
   // }
+
+  async uploadImage(name, file, productId) {
+    try {
+      const saveImg = new ImgModel({
+        productId: productId,
+        name: name,
+        img: {
+          data: fs.readFileSync('uploads/' + file.filename),
+          contentType: 'image/png',
+        }
+      })
+
+      saveImg.save()
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+    }
+  }
+
+  async getImage(productId) {
+    try {
+      const image = await ImgModel.findOne({ productId: productId });
+
+      return image;
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+    }
+  }
 }
 
 module.exports = new productsService()
