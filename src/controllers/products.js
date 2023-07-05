@@ -1,5 +1,6 @@
 const productsService = require('../services/products');
 const ApiError = require('../exceptions/api-error');
+const fs = require('fs');
 
 class productsController {
   async getAll(req, res) {
@@ -52,7 +53,7 @@ class productsController {
     } = req.body;
 
     try {
-      await productsService.addProduct({
+      const resProduct = await productsService.addProduct({
         name,
         description,
         price,
@@ -63,7 +64,55 @@ class productsController {
         packageCost
       });
 
-      res.status(200).send('Product added');
+      res.status(200).send(resProduct);
+    } catch (error) {
+      throw ApiError.BadRequest(error.message);
+    }
+  }
+
+  async editProduct(req, res) {
+    const {
+      id,
+      name,
+      description,
+      price,
+      weight,
+      category,
+      count,
+      likesCount,
+      packageCost,
+      image,
+    } = req.body;
+
+    try {
+      const resProduct = await productsService.editProduct({
+        id,
+        name,
+        description,
+        price,
+        weight,
+        category,
+        count,
+        likesCount,
+        packageCost
+      });
+
+      res.status(200).send(resProduct);
+
+    } catch (error) {
+      throw ApiError.BadRequest(error.message);
+    }
+  }
+
+  async deleteProduct(req, res) {
+    const { productId } = req.body;
+
+    console.log('productId', productId)
+
+    try {
+      await productsService.deleteProduct(productId);
+
+      res.status(200).send('Product deleted');
     } catch (error) {
       throw ApiError.BadRequest(error.message);
     }
@@ -153,31 +202,44 @@ class productsController {
     }
   }
 
+  async changeImage(req, res) {
+    try {
+      const { name, productId } = req.body;
+
+      await productsService.changeImage(name, req.file, productId)
+
+      res.send('Image changed');
+    } catch (error) {
+      throw ApiError.BadRequest(error.message);
+    }
+  }
+
   async getImage(req, res) {
     try {
       const { productId } = req.query;
 
       const image = await productsService.getImage(productId);
 
+      // console.log('image', image)
+
       res.send(image);
+
+      // const data = fs.readFile('uploads/keto' + '.jpeg', (err, data) => {
+      //   if (err) throw err;
+
+      //   console.log(data)
+
+      //   const uint8Array = new Uint8Array(data);
+      //   const byteArray = Array.from(uint8Array);
+      //   // const base64String = btoa(byteArray.map((item64) => String.fromCharCode(item64)).join(''));
+      //   const base64String = Buffer.from(byteArray).toString('base64');
+
+      //   res.send(base64String);
+      // })
     } catch (error) {
       throw ApiError.BadRequest(error.message);
     }
   }
-
-  // app.post('/upload', upload.single('testImg'), (req, res) => {
-  //   const saveImg = new ImgModel({
-  //     name: req.body.name,
-  //     img: {
-  //       data: fs.readFileSync('uploads/' + req.file.filename),
-  //       contentType: 'image/png'
-  //     }
-  //   })
-
-  //   saveImg.save()
-
-  //   res.send('ok')
-  // })
 }
 
 module.exports = new productsController();

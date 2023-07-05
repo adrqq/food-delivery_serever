@@ -5,15 +5,23 @@ const mailService = require('./mail');
 const TokenService = require('./token');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
+const tokenModel = require('../models/token-model');
 // const token = require('./token');
 // const jwt = require('jsonwebtoken');
 
 class UserService {
 
   async registration(name, role, email, password) {
-    const candidate = await UserModel.findOne({ email });
+    const candidate = await UserModel.findOne({ email, isActivated: true });
+
     if (candidate) {
-      throw ApiError.BadRequest('User with this email already exists');
+      throw ApiError.BadRequest('User with this email already exists in the database');
+    }
+
+    const candidateNotActivated = await UserModel.findOne({ email, isActivated: false });
+
+    if (candidateNotActivated) {
+      UserModel.deleteOne({ email, isActivated: false });
     }
 
     const hashPassword = await bcrypt.hash(password, 3);
@@ -22,11 +30,32 @@ class UserService {
     await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
 
     const userDto = new UserDto(user);
-    const tokens = TokenService.generateToken({ ...userDto });
-    await TokenService.saveToken(userDto.id, tokens.refreshToken);
 
-    return { ...tokens, user: userDto };
+    return { user: userDto };
   }
+
+  // async registration(name, role, email, password) {
+  //   const candidate = await UserModel.findOne({ email, isActivated: true });
+
+  //   if (candidate) {
+  //     throw ApiError.BadRequest('User with this email already exists in the database');
+  //   }
+
+  //   const usersNotActivated = await UserActivationModel.find({ email });
+
+  //   if (usersNotActivated.length > 10) {
+  //     throw ApiError.BadRequest('Too many requests, please try again later');
+  //   }
+
+  //   const hashPassword = await bcrypt.hash(password, 3);
+  //   const activationLink = uuid.v4();
+  //   const user = await UserActivationModel.create({ name, role, email, password: hashPassword, activationLink });
+  //   await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
+
+  //   const userDto = new UserDto(user);
+
+  //   return { user: userDto };
+  // }
 
   async login(email, password) {
     const user = await UserModel.findOne({ email });
@@ -39,6 +68,10 @@ class UserService {
 
     if (!isPassEquals) {
       throw ApiError.BadRequest('Incorrect password');
+    }
+
+    if (!user.isActivated) {
+      return 'activate';
     }
 
     const userDto = new UserDto(user);
@@ -84,16 +117,111 @@ class UserService {
 
   async activate(activationLink) {
     const user = await UserModel.findOne({ activationLink });
+    const existingUser = await UserModel.findOne({ email: user.email, isActivated: true });
 
     if (!user) {
       throw ApiError.BadRequest('Incorrect activation link');
     }
 
+    if (existingUser) {
+      throw ApiError.BadRequest('User with this email already activated');
+    }
+
     user.isActivated = true;
     await user.save();
 
-    console.log('User activated');
+    return 'User successfully activated';
   };
-}
 
+  // async activate(activationLink) {
+  //   const user = await UserActivationModel.findOne({ activationLink });
+  //   const existingUser = await UserModel.findOne({ email: user.email, isActivated: true });
+
+  //   if (existingUser) {
+  //     throw ApiError.BadRequest('User with this email already exists in the database');
+  //   }
+
+  //   if (!user) {
+  //     throw ApiError.BadRequest('Incorrect activation link');
+  //   }
+
+  //   const newUser = await UserModel.create({ name: user.name, role: user.role, email: user.email, password: user.password, isActivated: true });
+  //   const userDto = new UserDto(user);
+  //   const tokens = TokenService.generateToken({ ...userDto });
+  //   await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+  //   const fakeUsers = await UserActivationModel.find({ email: user.email });
+
+  //   if (fakeUsers.length) {
+  //     await UserActivationModel.deleteMany({ email: user.email });
+  //   }
+
+  //   return { ...tokens, user: userDto };
+  // }
+
+  async sendActivationLink(email) {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      throw new ApiError.BadRequest('User with this email does not exist');
+    }
+
+    if (user.isActivated) {
+      throw new ApiError.BadRequest('User is already activated');
+    }
+
+    const activationLink = uuid.v4();
+
+    user.activationLink = activationLink;
+    await user.save();
+
+    await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
+
+    return activationLink;
+  }
+
+  async changeUserData(
+    oldEmail,
+    oldPassword,
+    name,
+    role,
+    email,
+    password,
+  ) {
+    const user = await UserModel.findOne({ email: oldEmail });
+
+    if (!user) {
+      console.log('MAIL', oldEmail);
+      throw ApiError.BadRequest('User with this email does not exist');
+    }
+
+    // const isPassEquals = await bcrypt.compare(oldPassword, user.password);
+
+    // if (!isPassEquals) {
+    //   throw ApiError.BadRequest('Incorrect old password, data is not changed');
+    // }
+
+    const hashPassword = await bcrypt.hash(password, 3);
+    const activationLink = uuid.v4();
+    const changedUser = await UserModel.updateOne(
+      {
+        name,
+        role,
+        email,
+        password: hashPassword,
+        isActivated: false,
+        activationLink,
+        oldEmails: [...user.oldEmails, oldEmail],
+      },
+    );
+
+    await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
+
+    await tokenModel.deleteMany({ userId: user._id });
+
+    const userDto = new UserDto(changedUser);
+
+    return { user: userDto };
+  }
+}
 module.exports = new UserService();

@@ -76,6 +76,23 @@ class productsService {
     }
   }
 
+  async editProduct(product) {
+    try {
+      await ProductModel.updateOne({ id: product.id }, product);
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+    }
+  }
+
+  async deleteProduct(productId) {
+    try {
+      await ProductModel.deleteOne({ id: productId });
+      await ImgModel.deleteOne({ productId: productId });
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
   async increaseLikesCount(id) {
     try {
       const product = await ProductModel.findOne({ id: id })
@@ -214,6 +231,24 @@ class productsService {
       })
 
       saveImg.save()
+    } catch (e) {
+      ApiError.BadRequest(e.message)
+    }
+  }
+
+  async changeImage(name, file, productId) {
+    try {
+      const image = await ImgModel.findOne({ productId: productId });
+
+      if (image) {
+        image.name = name;
+        image.img = {
+          data: fs.readFileSync('uploads/' + file.filename),
+          contentType: 'image/png',
+        }
+
+        image.save();
+      }
     } catch (e) {
       ApiError.BadRequest(e.message)
     }

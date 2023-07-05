@@ -27,11 +27,14 @@ router.get('/products/length', productsController.getLength);
 router.get('/products/search', productsController.search);
 router.get('/products/user/cart', productsController.getUserCart);
 router.post('/products/add', productsController.addProduct);
+router.post('/products/edit', productsController.editProduct);
+router.post('/products/delete', productsController.deleteProduct);
 router.post('/products/likes/add', productsController.increaseLikesCount);
 router.post('/products/user/cart/add', productsController.addProductToUserCart);
 router.post('/products/user/cart/remove', productsController.removeProductFromUserCart);
 router.post('/products/user/cart/delete', productsController.deleteProductFromUserCart);
 router.post('/products/image/upload', upload.single('image'), productsController.uploadImage);
+router.post('/products/image/change', upload.single('image'), productsController.changeImage);
 router.get('/products/image/get', productsController.getImage);
 // router.post('/products/user/cart/clear', productsController.clearUserCart);
 
