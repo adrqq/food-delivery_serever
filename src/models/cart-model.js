@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose');
 
 const ItemSchema = new Schema({
-  productId: { type: Number, required: true },
+  product: { type: Object, required: true },
   count: { type: Number, required: true },
 });
 

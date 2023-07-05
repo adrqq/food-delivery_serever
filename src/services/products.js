@@ -106,10 +106,10 @@ class productsService {
     }
   };
 
-  async addProductToUserCart(userId, productId) {
-    console.log('userId', userId, 'productId', productId)
+  async addProductToUserCart(userId, product) {
+    console.log('userId', userId, 'product', product)
 
-    if (!userId || !productId) {
+    if (!userId || !product) {
       throw ApiError.BadRequest('userId or productId is not defined')
     }
 
@@ -117,14 +117,14 @@ class productsService {
       const cart = await CartModel.findOne({ userId: userId });
 
       if (cart) {
-        const item = cart.itemsData.find(item => item.productId === productId);
+        const item = cart.itemsData.find(item => item.product.id === product.id);
 
         if (item) {
           item.count += 1;
           cart.save();
         } else {
           cart.itemsData.push({
-            productId: productId,
+            product: product,
             count: 1,
           });
           cart.save();
@@ -134,7 +134,7 @@ class productsService {
           userId: userId,
           itemsData: [
             {
-              productId: productId,
+              product: product,
               count: 1,
             }
           ]

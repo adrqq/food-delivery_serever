@@ -140,9 +140,9 @@ class productsController {
 
   async addProductToUserCart(req, res) {
     try {
-      const { userId, productId } = req.body;
+      const { userId, product } = req.body;
 
-      await productsService.addProductToUserCart(userId, productId);
+      await productsService.addProductToUserCart(userId, product);
 
       res.send('Product added to cart');
     } catch (error) {

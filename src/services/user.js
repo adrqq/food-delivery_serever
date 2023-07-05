@@ -31,7 +31,10 @@ class UserService {
 
     const userDto = new UserDto(user);
 
-    return { user: userDto };
+    const tokens = TokenService.generateToken({ ...userDto });
+    await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    return { ...tokens, user: userDto };
   }
 
   // async registration(name, role, email, password) {
@@ -70,13 +73,18 @@ class UserService {
       throw ApiError.BadRequest('Incorrect password');
     }
 
-    if (!user.isActivated) {
-      return 'activate';
-    }
-
     const userDto = new UserDto(user);
     const tokens = TokenService.generateToken({ ...userDto });
     await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    if (!user.isActivated) {
+      return {
+        ...tokens, user: {
+          ...userDto,
+          isActivated: false,
+        }
+      };
+    }
 
     return { ...tokens, user: userDto };
   }
@@ -93,6 +101,8 @@ class UserService {
       throw ApiError.UnauthorizedError();
     }
 
+
+
     const userData = TokenService.validateRefreshToken(refreshToken);
     const tokenFromDb = await TokenService.findToken(refreshToken);
 
@@ -102,6 +112,11 @@ class UserService {
     }
 
     const user = await UserModel.findById(userData.id);
+
+    if (!user.isActivated) {
+      return user.email;
+    }
+
     const userDto = new UserDto(user);
     const tokens = TokenService.generateToken({ ...userDto });
     await TokenService.saveToken(userDto.id, refreshToken);
