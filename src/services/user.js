@@ -210,11 +210,11 @@ class UserService {
       throw ApiError.BadRequest('User with this email does not exist');
     }
 
-    // const isPassEquals = await bcrypt.compare(oldPassword, user.password);
+    const isPassEquals = await bcrypt.compare(oldPassword, user.password);
 
-    // if (!isPassEquals) {
-    //   throw ApiError.BadRequest('Incorrect old password, data is not changed');
-    // }
+    if (!isPassEquals) {
+      throw ApiError.BadRequest('Incorrect old password, data is not changed');
+    }
 
     const hashPassword = await bcrypt.hash(password, 3);
     const activationLink = uuid.v4();
@@ -224,13 +224,15 @@ class UserService {
         role,
         email,
         password: hashPassword,
-        isActivated: false,
+        isActivated: email === oldEmail ? user.isActivated : false,
         activationLink,
-        oldEmails: [...user.oldEmails, oldEmail],
+        oldEmails: email === oldEmail ? user.oldEmails : [...user.oldEmails, user.email],
       },
     );
 
-    await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
+    if (email !== oldEmail) {
+      await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
+    }
 
     await tokenModel.deleteMany({ userId: user._id });
 
