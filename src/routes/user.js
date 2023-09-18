@@ -1,5 +1,3 @@
-'use strict';
-
 const express = require('express');
 const userController = require('../controllers/user');
 const authMiddleware = require('../middlewares/auth-middleware');

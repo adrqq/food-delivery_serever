@@ -6,11 +6,8 @@ const TokenService = require('./token');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
 const tokenModel = require('../models/token-model');
-// const token = require('./token');
-// const jwt = require('jsonwebtoken');
 
 class UserService {
-
   async registration(name, role, email, password) {
     const candidate = await UserModel.findOne({ email, isActivated: true });
 
@@ -36,29 +33,6 @@ class UserService {
 
     return { ...tokens, user: userDto };
   }
-
-  // async registration(name, role, email, password) {
-  //   const candidate = await UserModel.findOne({ email, isActivated: true });
-
-  //   if (candidate) {
-  //     throw ApiError.BadRequest('User with this email already exists in the database');
-  //   }
-
-  //   const usersNotActivated = await UserActivationModel.find({ email });
-
-  //   if (usersNotActivated.length > 10) {
-  //     throw ApiError.BadRequest('Too many requests, please try again later');
-  //   }
-
-  //   const hashPassword = await bcrypt.hash(password, 3);
-  //   const activationLink = uuid.v4();
-  //   const user = await UserActivationModel.create({ name, role, email, password: hashPassword, activationLink });
-  //   await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
-
-  //   const userDto = new UserDto(user);
-
-  //   return { user: userDto };
-  // }
 
   async login(email, password) {
     const user = await UserModel.findOne({ email });
@@ -100,8 +74,6 @@ class UserService {
       console.log('refreshToken', refreshToken);
       throw ApiError.UnauthorizedError();
     }
-
-
 
     const userData = TokenService.validateRefreshToken(refreshToken);
     const tokenFromDb = await TokenService.findToken(refreshToken);
@@ -147,32 +119,6 @@ class UserService {
 
     return 'User successfully activated';
   };
-
-  // async activate(activationLink) {
-  //   const user = await UserActivationModel.findOne({ activationLink });
-  //   const existingUser = await UserModel.findOne({ email: user.email, isActivated: true });
-
-  //   if (existingUser) {
-  //     throw ApiError.BadRequest('User with this email already exists in the database');
-  //   }
-
-  //   if (!user) {
-  //     throw ApiError.BadRequest('Incorrect activation link');
-  //   }
-
-  //   const newUser = await UserModel.create({ name: user.name, role: user.role, email: user.email, password: user.password, isActivated: true });
-  //   const userDto = new UserDto(user);
-  //   const tokens = TokenService.generateToken({ ...userDto });
-  //   await TokenService.saveToken(userDto.id, tokens.refreshToken);
-
-  //   const fakeUsers = await UserActivationModel.find({ email: user.email });
-
-  //   if (fakeUsers.length) {
-  //     await UserActivationModel.deleteMany({ email: user.email });
-  //   }
-
-  //   return { ...tokens, user: userDto };
-  // }
 
   async sendActivationLink(email) {
     const user = await UserModel.findOne({ email });

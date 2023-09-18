@@ -1,5 +1,3 @@
-'use strict';
-
 const express = require('express');
 const productsController = require('../controllers/products');
 const imageUploadMiddleware = require('../middlewares/img-upload-middleware');

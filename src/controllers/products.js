@@ -27,9 +27,15 @@ class productsController {
   }
 
   async getChunk(req, res) {
-    const { page, itemsPerPage, filter, searchQuery } = req.query;
+    const {
+      page,
+      itemsPerPage,
+      filter,
+      searchQuery,
+      sortType,
+    } = req.query;
 
-    console.log('page', page, 'itemsPerPage', itemsPerPage, 'filter', filter, 'searchQuery', searchQuery);
+    console.log('page', page, 'itemsPerPage', itemsPerPage, 'filter', filter, 'searchQuery', searchQuery, 'sortType', sortType);
 
     try {
       const products = await productsService.getChunk(page, itemsPerPage, filter, searchQuery);
