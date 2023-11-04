@@ -1,7 +1,7 @@
 const UserModel = require('../models/user-model');
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
-const mailService = require('./mail');
+const MailService = require('./mail');
 const TokenService = require('./token');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
@@ -24,7 +24,7 @@ class UserService {
     const hashPassword = await bcrypt.hash(password, 3);
     const activationLink = uuid.v4();
     const user = await UserModel.create({ name, role, email, password: hashPassword, activationLink });
-    await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
+    await MailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
 
     const userDto = new UserDto(user);
 
@@ -136,7 +136,7 @@ class UserService {
     user.activationLink = activationLink;
     await user.save();
 
-    await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
+    await MailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
 
     return activationLink;
   }
@@ -177,7 +177,7 @@ class UserService {
     );
 
     if (email !== oldEmail) {
-      await mailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
+      await MailService.sendActivationMail(email, `${process.env.API_URL}/activate/${activationLink}`);
     }
 
     await tokenModel.deleteMany({ userId: user._id });
