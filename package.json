@@ -10,7 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cd ./src && nodemon index.js",
     "shell": "firebase functions:shell",
-    "start": "cd ./src && node index.js"
+    "start": "cd ./src && node index.js",
+    "vercel-build": "echo 'vercel-build'"
   },
   "author": "",
   "license": "ISC",
