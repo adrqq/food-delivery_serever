@@ -10,8 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cd ./src && nodemon index.js",
     "shell": "firebase functions:shell",
-    "start": "cd ./src && node index.js",
-    "vercel-build": "echo 'vercel-build'"
+    "start": "cd ./src && node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -21,15 +20,12 @@
     "nodemon": "2.0.20"
   },
   "dependencies": {
-    "@vercel/node": "^3.0.7",
     "bcrypt": "^5.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "2.8.5",
     "dotenv": "16.0.3",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
-    "firebase-admin": "^11.5.0",
-    "firebase-functions": "^4.2.0",
     "fs": "0.0.1-security",
     "ioredis": "^5.3.0",
     "jsonwebtoken": "^9.0.0",
@@ -39,8 +35,6 @@
     "nodemailer": "^6.9.1",
     "pg": "^8.9.0",
     "sequelize": "^6.28.0",
-    "sqlite3": "^5.1.4",
-    "undici": "^5.18.0",
     "uuid": "^9.0.0"
   }
 }
