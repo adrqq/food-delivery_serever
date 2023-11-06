@@ -9,7 +9,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cd ./src && nodemon index.js",
-    "shell": "firebase functions:shell",
     "start": "cd ./src && node index.js"
   },
   "author": "",
@@ -27,6 +26,7 @@
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "fs": "0.0.1-security",
+    "https": "^1.0.0",
     "ioredis": "^5.3.0",
     "jsonwebtoken": "^9.0.0",
     "mongodb": "^5.0.0",
