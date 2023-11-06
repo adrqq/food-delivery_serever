@@ -3,6 +3,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const fs = require('fs');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -33,7 +34,8 @@ async function setup() {
   app.use('/', express.json(), userRouter);
   app.get('/.well-known/pki-validation/3264C2478A6E0C5B33069F0CDF680FE5.txt', (req, res) => {
     console.log('validationFile', validationFile);
-    res.send(validationFile);
+
+    res.sendFile(path.join(__dirname, '../3264C2478A6E0C5B33069F0CDF680FE5.txt'));
   });
 
   app.use(errorMiddleware)
